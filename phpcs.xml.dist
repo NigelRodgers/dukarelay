@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<ruleset name="DukaRelay">
+	<description>Coding standards for DukaRelay — WordPress-Extra, with our prefix and text domain enforced. Dev and review loops run this exact ruleset (coding-standards.md §3).</description>
+
+	<!-- Scan the whole plugin; skip dependencies/build artefacts. -->
+	<file>.</file>
+	<exclude-pattern>/vendor/*</exclude-pattern>
+	<exclude-pattern>/node_modules/*</exclude-pattern>
+
+	<!-- Show sniff codes and progress; only flag PHP. -->
+	<arg value="ps"/>
+	<arg name="extensions" value="php"/>
+	<arg name="colors"/>
+
+	<!-- The WordPress-Extra ruleset (style + best practices, minus overly strict docs rules). -->
+	<rule ref="WordPress-Extra"/>
+
+	<!-- Target versions (matches plugin header). -->
+	<config name="minimum_supported_wp_version" value="6.4"/>
+	<config name="testVersion" value="7.4-"/>
+
+	<!-- Enforce our unique prefix on all globals (coding-standards §1). -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="dukarelay"/>
+				<element value="DukaRelay"/>
+				<element value="DUKARELAY"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- Enforce our single text domain (coding-standards §3). -->
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="dukarelay"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>
