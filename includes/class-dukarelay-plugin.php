@@ -92,13 +92,16 @@ final class DukaRelay_Plugin {
 		require_once DUKARELAY_PLUGIN_DIR . 'includes/core/interface-dukarelay-sender.php';
 		require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-connection.php';
 		require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-ledger.php';
+		require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-cloud-api-sender.php';
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-templates.php';
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-webhook.php';
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-token-health.php';
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-relay.php';
 
-		$this->set_service( 'connection', new DukaRelay_Connection() );
+		$connection = new DukaRelay_Connection();
+		$this->set_service( 'connection', $connection );
 		$this->set_service( 'ledger', new DukaRelay_Ledger() );
+		$this->set_service( 'sender', new DukaRelay_Cloud_Api_Sender( $connection ) );
 
 		/**
 		 * Fires after Core services are registered. Modules and add-ons register
