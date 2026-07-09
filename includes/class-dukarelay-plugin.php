@@ -91,13 +91,14 @@ final class DukaRelay_Plugin {
 	private function load_core() {
 		require_once DUKARELAY_PLUGIN_DIR . 'includes/core/interface-dukarelay-sender.php';
 		require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-connection.php';
-		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-ledger.php';
+		require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-ledger.php';
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-templates.php';
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-webhook.php';
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-token-health.php';
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-relay.php';
 
 		$this->set_service( 'connection', new DukaRelay_Connection() );
+		$this->set_service( 'ledger', new DukaRelay_Ledger() );
 
 		/**
 		 * Fires after Core services are registered. Modules and add-ons register
