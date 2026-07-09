@@ -4,7 +4,8 @@
  * schema changes). See ADR-0002 for the single-ledger data model.
  *
  * Some columns are intentional rough-ins: context_message_id is for 1.0
- * swipe-reply routing; order_id is written by the WooCommerce module.
+ * swipe-reply routing; order_id is written by the WooCommerce module;
+ * category (marketing/utility/service) feeds the 250/24h cap meter + pricing.
  *
  * @package DukaRelay
  */
@@ -61,6 +62,7 @@ class DukaRelay_Activator {
 			context_message_id VARCHAR(128) NULL,
 			order_id BIGINT UNSIGNED NULL,
 			template_id BIGINT UNSIGNED NULL,
+			category VARCHAR(20) NULL,
 			status VARCHAR(20) NOT NULL DEFAULT 'queued',
 			error TEXT NULL,
 			body LONGTEXT NULL,
