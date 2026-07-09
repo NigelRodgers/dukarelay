@@ -177,6 +177,39 @@ class DukaRelay_Ledger {
 	}
 
 	/**
+	 * Update a message row by its own id with a send outcome. Used by the
+	 * dispatcher to write the result onto the row it created as 'queued'.
+	 *
+	 * @param int    $message_id    Ledger row id.
+	 * @param string $status        New status ('sent'|'failed'|...).
+	 * @param string $wa_message_id WhatsApp message id (set on success).
+	 * @param string $error         Decoded reason (set on failure).
+	 * @return bool True if a row was updated.
+	 */
+	public function update_result( $message_id, $status, $wa_message_id = '', $error = '' ) {
+		global $wpdb;
+
+		$message_id = absint( $message_id );
+		if ( ! $message_id ) {
+			return false;
+		}
+
+		$data = array(
+			'status'     => sanitize_key( $status ),
+			'error'      => ( '' !== $error ) ? sanitize_textarea_field( $error ) : null,
+			'updated_at' => $this->now(),
+		);
+		if ( '' !== $wa_message_id ) {
+			$data['wa_message_id'] = sanitize_text_field( $wa_message_id );
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- custom table update.
+		$updated = $wpdb->update( $this->messages_table(), $data, array( 'id' => $message_id ) );
+
+		return (bool) $updated;
+	}
+
+	/**
 	 * Fetch a single message row by id.
 	 *
 	 * @param int $id Message id.
