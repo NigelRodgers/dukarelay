@@ -116,7 +116,16 @@ final class DukaRelay_Plugin {
 		$this->set_service( 'webhook', new DukaRelay_Webhook( $connection, $ledger ) );
 		$this->set_service( 'inbound_relay', new DukaRelay_Inbound_Relay( $settings, $dispatcher ) );
 		$this->set_service( 'token_health', new DukaRelay_Token_Health( $connection, $settings, $dispatcher ) );
-		$this->set_service( 'templates', new DukaRelay_Templates( $connection ) );
+		$templates = new DukaRelay_Templates( $connection );
+		$this->set_service( 'templates', $templates );
+
+		if ( is_admin() ) {
+			require_once DUKARELAY_PLUGIN_DIR . 'includes/admin/class-dukarelay-admin.php';
+			$this->set_service(
+				'admin',
+				new DukaRelay_Admin( $connection, $settings, $this->service( 'token_health' ), $templates )
+			);
+		}
 
 		// Register the primary sender on the resolver filter (priority order =
 		// array order). Fallback senders add themselves at a lower priority.

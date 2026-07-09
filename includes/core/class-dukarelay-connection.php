@@ -70,14 +70,19 @@ class DukaRelay_Connection {
 	}
 
 	/**
-	 * Save credentials. Secret fields are encrypted before storage; all values
-	 * are sanitized. Only recognised fields are persisted.
+	 * Save credentials. Merges with existing values so a partial save (e.g. the
+	 * settings form leaving a secret blank to keep it) never wipes other fields.
+	 * Secret fields are encrypted; all values sanitized; only recognised fields
+	 * are persisted.
 	 *
-	 * @param array<string,string> $input Raw field => value.
+	 * @param array<string,string> $input Raw field => value. Blank/unset = keep existing.
 	 * @return void
 	 */
 	public function save_credentials( array $input ) {
-		$to_store = array();
+		$to_store = get_option( self::OPTION_KEY, array() );
+		if ( ! is_array( $to_store ) ) {
+			$to_store = array();
+		}
 
 		foreach ( $this->fields as $field ) {
 			if ( ! isset( $input[ $field ] ) ) {
@@ -85,7 +90,7 @@ class DukaRelay_Connection {
 			}
 			$value = sanitize_text_field( wp_unslash( $input[ $field ] ) );
 			if ( '' === $value ) {
-				continue;
+				continue; // Blank means "leave the stored value untouched".
 			}
 			if ( in_array( $field, $this->secret_fields, true ) ) {
 				$value = $this->encrypt( $value );
