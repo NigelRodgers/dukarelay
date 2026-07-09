@@ -121,10 +121,12 @@ final class DukaRelay_Plugin {
 
 		if ( is_admin() ) {
 			require_once DUKARELAY_PLUGIN_DIR . 'includes/admin/class-dukarelay-admin.php';
+			require_once DUKARELAY_PLUGIN_DIR . 'includes/admin/class-dukarelay-log-page.php';
 			$this->set_service(
 				'admin',
 				new DukaRelay_Admin( $connection, $settings, $this->service( 'token_health' ), $templates )
 			);
+			$this->set_service( 'log_page', new DukaRelay_Log_Page( $ledger ) );
 		}
 
 		// Register the primary sender on the resolver filter (priority order =
