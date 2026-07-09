@@ -243,7 +243,7 @@ class DukaRelay_Woo_Module {
 	 */
 	private function summary( array $vars ) {
 		return sprintf(
-			'Order %1$s (%2$s) -> %3$s',
+			'Order %1$s (%2$s) - %3$s',
 			$vars['order_number'],
 			$vars['order_total'],
 			$vars['order_status']
