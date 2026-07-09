@@ -90,6 +90,7 @@ final class DukaRelay_Plugin {
 	 */
 	private function load_core() {
 		require_once DUKARELAY_PLUGIN_DIR . 'includes/core/interface-dukarelay-sender.php';
+		require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-settings.php';
 		require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-connection.php';
 		require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-ledger.php';
 		require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-cloud-api-sender.php';
@@ -103,6 +104,7 @@ final class DukaRelay_Plugin {
 		$ledger     = new DukaRelay_Ledger();
 		$sender     = new DukaRelay_Cloud_Api_Sender( $connection );
 
+		$this->set_service( 'settings', new DukaRelay_Settings() );
 		$this->set_service( 'connection', $connection );
 		$this->set_service( 'ledger', $ledger );
 		$this->set_service( 'sender', $sender );
@@ -145,15 +147,15 @@ final class DukaRelay_Plugin {
 	}
 
 	/**
-	 * Whether a module is enabled in settings. WooCommerce defaults on so a
-	 * fresh Woo install works out of the box.
+	 * Whether a module is enabled, per the Settings store. WooCommerce defaults
+	 * on so a fresh Woo install works out of the box.
 	 *
 	 * @param string $module Module slug, e.g. 'woocommerce'.
 	 * @return bool
 	 */
 	private function is_module_enabled( $module ) {
-		$enabled = get_option( 'dukarelay_enabled_modules', array( 'woocommerce' => true ) );
-		return ! empty( $enabled[ $module ] );
+		$settings = $this->service( 'settings' );
+		return $settings instanceof DukaRelay_Settings ? $settings->is_module_enabled( $module ) : false;
 	}
 
 	/**

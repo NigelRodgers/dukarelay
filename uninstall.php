@@ -24,5 +24,6 @@ $wpdb->query( "DROP TABLE IF EXISTS {$dukarelay_conversations_table}" );
 
 // Delete our options.
 delete_option( 'dukarelay_db_version' );
-delete_option( 'dukarelay_enabled_modules' );
+delete_option( 'dukarelay_settings' );
 delete_option( 'dukarelay_credentials' );
+delete_option( 'dukarelay_enabled_modules' ); // legacy key (pre-Settings); harmless if absent.
