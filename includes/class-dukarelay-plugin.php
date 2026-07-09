@@ -149,7 +149,15 @@ final class DukaRelay_Plugin {
 		if ( ! $this->is_module_enabled( 'woocommerce' ) ) {
 			return;
 		}
-		// require_once DUKARELAY_PLUGIN_DIR . 'includes/modules/woocommerce/class-dukarelay-woo-module.php';
+
+		$dispatcher = $this->service( 'dispatcher' );
+		$settings   = $this->service( 'settings' );
+		if ( ! $dispatcher instanceof DukaRelay_Dispatcher || ! $settings instanceof DukaRelay_Settings ) {
+			return;
+		}
+
+		require_once DUKARELAY_PLUGIN_DIR . 'includes/modules/woocommerce/class-dukarelay-woo-module.php';
+		$this->set_service( 'woo_module', new DukaRelay_Woo_Module( $dispatcher, $settings ) );
 	}
 
 	/**
