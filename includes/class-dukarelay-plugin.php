@@ -122,11 +122,16 @@ final class DukaRelay_Plugin {
 		if ( is_admin() ) {
 			require_once DUKARELAY_PLUGIN_DIR . 'includes/admin/class-dukarelay-admin.php';
 			require_once DUKARELAY_PLUGIN_DIR . 'includes/admin/class-dukarelay-log-page.php';
+			require_once DUKARELAY_PLUGIN_DIR . 'includes/admin/class-dukarelay-wizard.php';
 			$this->set_service(
 				'admin',
 				new DukaRelay_Admin( $connection, $settings, $this->service( 'token_health' ), $templates )
 			);
 			$this->set_service( 'log_page', new DukaRelay_Log_Page( $ledger ) );
+			$this->set_service(
+				'wizard',
+				new DukaRelay_Wizard( $connection, $settings, $this->service( 'token_health' ), $templates )
+			);
 		}
 
 		// Register the primary sender on the resolver filter (priority order =
@@ -185,9 +190,22 @@ final class DukaRelay_Plugin {
 	}
 
 	/**
-	 * Activation: create the ledger tables (ADR-0002).
+	 * Activation: enforce the server-compatibility gate, then create the ledger
+	 * tables (ADR-0002). If requirements aren't met we refuse to activate rather
+	 * than run in a state where credentials can't be stored securely.
 	 */
 	public static function on_activate() {
+		require_once DUKARELAY_PLUGIN_DIR . 'includes/class-dukarelay-requirements.php';
+		$unmet = DukaRelay_Requirements::unmet();
+		if ( ! empty( $unmet ) ) {
+			deactivate_plugins( plugin_basename( DUKARELAY_PLUGIN_FILE ) );
+			wp_die(
+				esc_html( __( 'DukaRelay cannot be activated on this server:', 'dukarelay' ) . ' ' . implode( ' ', $unmet ) ),
+				esc_html__( 'DukaRelay — requirements not met', 'dukarelay' ),
+				array( 'back_link' => true )
+			);
+		}
+
 		require_once DUKARELAY_PLUGIN_DIR . 'includes/class-dukarelay-activator.php';
 		DukaRelay_Activator::activate();
 	}
