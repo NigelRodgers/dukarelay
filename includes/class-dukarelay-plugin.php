@@ -26,6 +26,14 @@ final class DukaRelay_Plugin {
 	private static $instance = null;
 
 	/**
+	 * The service container ("reception desk"): shared Core components, built
+	 * once and looked up by id. See docs/dev/architecture.md.
+	 *
+	 * @var array<string,object>
+	 */
+	private $services = array();
+
+	/**
 	 * Get (or create) the one shared instance.
 	 *
 	 * @return DukaRelay_Plugin
@@ -43,6 +51,28 @@ final class DukaRelay_Plugin {
 	private function __construct() {}
 
 	/**
+	 * Register (or replace) a shared service. Modules use this via the
+	 * 'dukarelay_register_services' hook to add or swap components.
+	 *
+	 * @param string $id      Service id, e.g. 'connection'.
+	 * @param object $service The service instance.
+	 * @return void
+	 */
+	public function set_service( $id, $service ) {
+		$this->services[ $id ] = $service;
+	}
+
+	/**
+	 * Look up a shared service by id.
+	 *
+	 * @param string $id Service id, e.g. 'connection'.
+	 * @return object|null Null if no service is registered under that id.
+	 */
+	public function service( $id ) {
+		return isset( $this->services[ $id ] ) ? $this->services[ $id ] : null;
+	}
+
+	/**
 	 * Boot the plugin. Core first, then the WooCommerce module if applicable.
 	 */
 	public function boot() {
@@ -51,18 +81,31 @@ final class DukaRelay_Plugin {
 	}
 
 	/**
-	 * Load Core subsystems (run on any WordPress site).
+	 * Load Core subsystems (run on any WordPress site), register them as
+	 * services, then fire the extension point so modules/add-ons can register
+	 * or swap services. Core classes here must stay shop-blind (ADR-0003).
 	 *
-	 * Stub: require_once lines are enabled as each class is built in 0.1; the
-	 * list documents the intended Core surface.
+	 * require_once lines are enabled as each class is built in 0.1; the list
+	 * documents the intended Core surface.
 	 */
 	private function load_core() {
+		require_once DUKARELAY_PLUGIN_DIR . 'includes/core/interface-dukarelay-sender.php';
 		require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-connection.php';
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-ledger.php';
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-templates.php';
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-webhook.php';
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-token-health.php';
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-relay.php';
+
+		$this->set_service( 'connection', new DukaRelay_Connection() );
+
+		/**
+		 * Fires after Core services are registered. Modules and add-ons register
+		 * or replace services here (e.g. add a fallback sender).
+		 *
+		 * @param DukaRelay_Plugin $plugin The plugin/container instance.
+		 */
+		do_action( 'dukarelay_register_services', $this );
 	}
 
 	/**
