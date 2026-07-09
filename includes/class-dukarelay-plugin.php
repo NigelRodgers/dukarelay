@@ -57,7 +57,7 @@ final class DukaRelay_Plugin {
 	 * list documents the intended Core surface.
 	 */
 	private function load_core() {
-		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-connection.php';
+		require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-connection.php';
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-ledger.php';
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-templates.php';
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-webhook.php';
