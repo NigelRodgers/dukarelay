@@ -94,8 +94,8 @@ final class DukaRelay_Plugin {
 		require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-ledger.php';
 		require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-cloud-api-sender.php';
 		require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-dispatcher.php';
+		require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-webhook.php';
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-templates.php';
-		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-webhook.php';
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-token-health.php';
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-relay.php';
 
@@ -107,6 +107,7 @@ final class DukaRelay_Plugin {
 		$this->set_service( 'ledger', $ledger );
 		$this->set_service( 'sender', $sender );
 		$this->set_service( 'dispatcher', new DukaRelay_Dispatcher( $ledger ) );
+		$this->set_service( 'webhook', new DukaRelay_Webhook( $connection, $ledger ) );
 
 		// Register the primary sender on the resolver filter (priority order =
 		// array order). Fallback senders add themselves at a lower priority.
