@@ -1,22 +1,10 @@
 <?php
 /**
- * The plugin orchestrator.
+ * Plugin orchestrator (singleton). Loads Core, then conditionally the
+ * WooCommerce module, and owns the activation/deactivation callbacks.
  *
- * WHAT THIS FILE IS (plain English):
- * One object that represents "the whole plugin." It is a singleton — there is
- * only ever one of it. Its job is to wire things together at boot:
- *   - load the Core (works on any WordPress site),
- *   - THEN, only if WooCommerce is installed AND the user enabled it, load the
- *     WooCommerce module (conditional loading = the plugin stays lightweight).
- *
- * It also holds the activate/deactivate hooks (creating DB tables, clearing
- * scheduled tasks). Right now most of this is scaffolding: the methods exist and
- * are called in the right order, but the Core/module classes they will load are
- * not written yet (release 0.1 fills them in). This file establishes the SHAPE.
- *
- * Layer rule (ADR-0002 / coding-standards §0.3): this file may look at whether
- * WooCommerce exists, but Core code it loads must NOT. Module depends on Core,
- * never the reverse.
+ * Layer rule (ADR-0003): this class may detect WooCommerce, but Core code it
+ * loads must not — modules depend on Core, never the reverse.
  *
  * @package DukaRelay
  */
@@ -50,14 +38,12 @@ final class DukaRelay_Plugin {
 	}
 
 	/**
-	 * Private constructor — use instance() instead. Prevents accidental duplicates.
+	 * Use instance() instead.
 	 */
 	private function __construct() {}
 
 	/**
-	 * Boot the plugin. Called on 'plugins_loaded'.
-	 *
-	 * Order matters: Core first, then conditionally the WooCommerce module.
+	 * Boot the plugin. Core first, then the WooCommerce module if applicable.
 	 */
 	public function boot() {
 		$this->load_core();
@@ -65,12 +51,10 @@ final class DukaRelay_Plugin {
 	}
 
 	/**
-	 * Load the Core subsystems (connection, ledger, templates, webhook,
-	 * token-health, relay). These run on ANY WordPress site.
+	 * Load Core subsystems (run on any WordPress site).
 	 *
-	 * SCAFFOLD: the require_once lines are intentionally commented out until the
-	 * classes exist. Uncomment each as it is built in release 0.1. Keeping them
-	 * listed here documents the intended Core surface.
+	 * Stub: require_once lines are enabled as each class is built in 0.1; the
+	 * list documents the intended Core surface.
 	 */
 	private function load_core() {
 		// require_once DUKARELAY_PLUGIN_DIR . 'includes/core/class-dukarelay-connection.php';
@@ -82,10 +66,9 @@ final class DukaRelay_Plugin {
 	}
 
 	/**
-	 * Load the WooCommerce module — but only if BOTH are true:
-	 *   1. WooCommerce is active (class_exists), and
-	 *   2. the user has enabled the module in settings.
-	 * If either is false, none of the module's files/hooks/assets load at all.
+	 * Load the WooCommerce module only if WooCommerce is active and the user
+	 * enabled it. Otherwise none of its files/hooks/assets load (keeps runtime
+	 * light).
 	 */
 	private function maybe_load_woocommerce_module() {
 		if ( ! class_exists( 'WooCommerce' ) ) {
@@ -98,8 +81,8 @@ final class DukaRelay_Plugin {
 	}
 
 	/**
-	 * Is a given module switched on in settings? Defaults to enabled for
-	 * WooCommerce so a fresh Woo install works out of the box.
+	 * Whether a module is enabled in settings. WooCommerce defaults on so a
+	 * fresh Woo install works out of the box.
 	 *
 	 * @param string $module Module slug, e.g. 'woocommerce'.
 	 * @return bool
@@ -110,8 +93,7 @@ final class DukaRelay_Plugin {
 	}
 
 	/**
-	 * Activation callback. Creates our database tables (the message ledger and
-	 * conversations table — ADR-0002). Delegated to the activator class.
+	 * Activation: create the ledger tables (ADR-0002).
 	 */
 	public static function on_activate() {
 		require_once DUKARELAY_PLUGIN_DIR . 'includes/class-dukarelay-activator.php';
@@ -119,8 +101,8 @@ final class DukaRelay_Plugin {
 	}
 
 	/**
-	 * Deactivation callback. Clears scheduled tasks (the token-health cron
-	 * heartbeat). Does NOT delete data — that only happens on uninstall.
+	 * Deactivation: clear scheduled tasks. Data is preserved (only uninstall
+	 * deletes it).
 	 */
 	public static function on_deactivate() {
 		$timestamp = wp_next_scheduled( 'dukarelay_token_health_check' );

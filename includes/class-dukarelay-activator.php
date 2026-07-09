@@ -1,18 +1,10 @@
 <?php
 /**
- * Activation: create the database tables.
+ * Creates the ledger tables via dbDelta (which also upgrades them on later
+ * schema changes). See ADR-0002 for the single-ledger data model.
  *
- * WHAT THIS FILE IS (plain English):
- * When the user clicks "Activate", WordPress runs this once. It creates the two
- * custom tables that hold every WhatsApp message (the "Message Ledger", ADR-0002)
- * and the conversations they belong to. We use WordPress's dbDelta() helper,
- * which is smart: run it again later with a changed schema and it *upgrades* the
- * table instead of erroring — so this same file handles future schema changes.
- *
- * These tables are the platform rough-in: release 0.1 barely uses some columns
- * (context_message_id is for 1.0 swipe-reply routing; order_id is filled by the
- * WooCommerce module), but shaping them correctly now avoids a painful migration
- * later. See docs/ for the full data-model rationale.
+ * Some columns are intentional rough-ins: context_message_id is for 1.0
+ * swipe-reply routing; order_id is written by the WooCommerce module.
  *
  * @package DukaRelay
  */
@@ -27,27 +19,26 @@ if ( ! defined( 'ABSPATH' ) ) {
 class DukaRelay_Activator {
 
 	/**
-	 * Bump this whenever the table structure below changes. Compared against the
-	 * stored option so we know when to re-run dbDelta on upgrade.
+	 * Bump when the schema below changes; compared against the stored option to
+	 * decide when to re-run dbDelta on upgrade.
 	 */
 	const DB_VERSION = '1';
 
 	/**
-	 * Run on activation. Creates both custom tables.
+	 * Create/upgrade both custom tables.
 	 */
 	public static function activate() {
 		global $wpdb;
 
-		// dbDelta lives in this file; it is not loaded by default.
+		// dbDelta() is not loaded by default.
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
-		// WordPress tells us the correct character set / collation to use.
 		$charset_collate = $wpdb->get_charset_collate();
 
 		$messages_table      = $wpdb->prefix . 'dukarelay_messages';
 		$conversations_table = $wpdb->prefix . 'dukarelay_conversations';
 
-		// --- Conversations: one row per person we talk to (a customer, or the Primary) ---
+		// Conversations: one row per peer (a customer, or the Primary Number).
 		$sql_conversations = "CREATE TABLE {$conversations_table} (
 			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 			peer_number VARCHAR(20) NOT NULL,
@@ -58,7 +49,7 @@ class DukaRelay_Activator {
 			KEY peer_number (peer_number)
 		) {$charset_collate};";
 
-		// --- Messages: the ledger. Every message in/out, every kind, one table ---
+		// Messages: the ledger — every message, both directions, one table.
 		$sql_messages = "CREATE TABLE {$messages_table} (
 			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 			conversation_id BIGINT UNSIGNED NULL,

@@ -1,18 +1,11 @@
 <?php
 /**
- * Uninstall cleanup.
- *
- * WHAT THIS FILE IS (plain English):
- * WordPress runs this ONLY when the user deletes the plugin (not on deactivate).
- * It removes everything we created: our two tables and our options. This keeps a
- * clean slate and satisfies WordPress.org's rule that plugins clean up after
- * themselves. It is deliberately destructive — that is the whole point of
- * uninstall — so it runs only via the official uninstall path guarded below.
+ * Uninstall cleanup: drops our tables and deletes our options. Runs only via
+ * WordPress's official uninstall path (guarded below), never on deactivation.
  *
  * @package DukaRelay
  */
 
-// Only run when WordPress itself is uninstalling this plugin. Never directly.
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
